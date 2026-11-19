@@ -12,6 +12,7 @@ class Settings(BaseSettings):
     app_env: str = "development"
     debug: bool = False
     database_url: str = "postgresql+psycopg://app_user:app_password@localhost:5432/resume_review"
+    database_url_unpooled: str | None = None
     redis_url: str = "redis://localhost:6379/0"
     secret_key: str = "dev-insecure-secret-key-change-in-prod"
     storage_dir: str = "/tmp/resume_storage"

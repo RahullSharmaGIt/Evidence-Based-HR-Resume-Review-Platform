@@ -5,6 +5,9 @@ import { SessionProvider } from "@/components/SessionProvider";
 export const metadata: Metadata = {
   title: "Evidence-Based Resume Review Platform",
   description: "Evidence-based candidate project review platform for hiring managers",
+  icons: {
+    icon: "/favicon.svg",
+  },
 };
 
 export default function RootLayout({

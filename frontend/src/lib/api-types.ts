@@ -21,6 +21,40 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/benchmarks": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List initial benchmark projects and indexing status */
+        get: operations["list_benchmarks_api_v1_benchmarks_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/benchmarks/index": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Trigger indexing of benchmark catalog repositories */
+        post: operations["trigger_benchmark_indexing_api_v1_benchmarks_index_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/candidates": {
         parameters: {
             query?: never;
@@ -124,6 +158,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/projects/{project_id}/discover-repositories": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Discover candidate repositories for project with custom limit */
+        post: operations["discover_project_repositories_endpoint_api_v1_projects__project_id__discover_repositories_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/projects/{project_id}/repositories": {
         parameters: {
             query?: never;
@@ -158,6 +209,24 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/projects/{project_id}/viva-questions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Retrieve cached project viva questions */
+        get: operations["get_project_viva_questions_api_v1_projects__project_id__viva_questions_get"];
+        put?: never;
+        /** Generate project-specific viva questions */
+        post: operations["create_project_viva_questions_api_v1_projects__project_id__viva_questions_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/resume-batches": {
         parameters: {
             query?: never;
@@ -175,6 +244,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/resumes/{resume_id}/download": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Download stored resume file securely */
+        get: operations["download_resume_api_v1_resumes__resume_id__download_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/session": {
         parameters: {
             query?: never;
@@ -182,7 +268,8 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get?: never;
+        /** Get current admin session status and CSRF token */
+        get: operations["get_auth_session_api_v1_session_get"];
         put?: never;
         /** Company admin login and session creation */
         post: operations["create_auth_session_api_v1_session_post"];
@@ -278,6 +365,68 @@ export interface components {
             successful?: components["schemas"]["BatchUploadItem"][];
             /** Total */
             total: number;
+        };
+        /** BenchmarkProjectResponse */
+        BenchmarkProjectResponse: {
+            /** Category */
+            category: string;
+            /** Createdat */
+            createdAt: string;
+            /** Description */
+            description?: string | null;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Name */
+            name: string;
+            repository?: components["schemas"]["BenchmarkRepositorySummary"] | null;
+            /** Updatedat */
+            updatedAt: string;
+        };
+        /** BenchmarkRepositorySummary */
+        BenchmarkRepositorySummary: {
+            /**
+             * Defaultbranch
+             * @default main
+             */
+            defaultBranch: string;
+            /** Description */
+            description?: string | null;
+            /** Failurereason */
+            failureReason?: string | null;
+            /**
+             * Fingerprintscount
+             * @default 0
+             */
+            fingerprintsCount: number;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Indexedat */
+            indexedAt?: string | null;
+            /** Indexingstatus */
+            indexingStatus: string;
+            /** License */
+            license?: string | null;
+            /** Name */
+            name: string;
+            /** Owner */
+            owner: string;
+            /** Pinnedcommitsha */
+            pinnedCommitSha: string;
+            /** Primarylanguage */
+            primaryLanguage: string;
+            /** Repositoryurl */
+            repositoryUrl: string;
+            /**
+             * Starscount
+             * @default 0
+             */
+            starsCount: number;
         };
         /** Body_upload_resume_batch_api_v1_resume_batches_post */
         Body_upload_resume_batch_api_v1_resume_batches_post: {
@@ -454,6 +603,46 @@ export interface components {
             /** Error Type */
             type: string;
         };
+        /** VivaQuestion */
+        VivaQuestion: {
+            /**
+             * Category
+             * @enum {string}
+             */
+            category: "Architecture & Design" | "Implementation Details" | "Edge Cases & Failure Modes" | "Security & Trade-offs" | "Testing & Evolution";
+            /** Expectedanswer */
+            expectedAnswer: string;
+            /** Id */
+            id: number;
+            /** Keysignals */
+            keySignals: string[];
+            /** Question */
+            question: string;
+            /** Redflags */
+            redFlags: string[];
+        };
+        /** VivaQuestionsResponse */
+        VivaQuestionsResponse: {
+            /**
+             * Generatedat
+             * Format: date-time
+             */
+            generatedAt: string;
+            /**
+             * Projectid
+             * Format: uuid
+             */
+            projectId: string;
+            /** Projecttitle */
+            projectTitle: string;
+            /** Questions */
+            questions: components["schemas"]["VivaQuestion"][];
+            /**
+             * Source
+             * @enum {string}
+             */
+            source: "gemini" | "fallback";
+        };
     };
     responses: never;
     parameters: never;
@@ -492,6 +681,48 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_benchmarks_api_v1_benchmarks_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BenchmarkProjectResponse"][];
+                };
+            };
+        };
+    };
+    trigger_benchmark_indexing_api_v1_benchmarks_index_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    }[];
                 };
             };
         };
@@ -708,9 +939,44 @@ export interface operations {
             };
         };
     };
+    discover_project_repositories_endpoint_api_v1_projects__project_id__discover_repositories_post: {
+        parameters: {
+            query?: {
+                limit?: number;
+            };
+            header?: never;
+            path: {
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RepositorySelectionResponse"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     get_project_repositories_api_v1_projects__project_id__repositories_get: {
         parameters: {
-            query?: never;
+            query?: {
+                limit?: number | null;
+            };
             header?: never;
             path: {
                 project_id: string;
@@ -774,6 +1040,70 @@ export interface operations {
             };
         };
     };
+    get_project_viva_questions_api_v1_projects__project_id__viva_questions_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["VivaQuestionsResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_project_viva_questions_api_v1_projects__project_id__viva_questions_post: {
+        parameters: {
+            query?: {
+                force_refresh?: boolean;
+            };
+            header?: never;
+            path: {
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["VivaQuestionsResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     upload_resume_batch_api_v1_resume_batches_post: {
         parameters: {
             query?: never;
@@ -803,6 +1133,57 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    download_resume_api_v1_resumes__resume_id__download_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                resume_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_auth_session_api_v1_session_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SessionResponse"];
                 };
             };
         };

@@ -58,9 +58,15 @@ from app.schemas.contracts import (
     SelectProjectRequest,
     SessionCreateRequest,
     SessionResponse,
+    VivaQuestionsResponse,
 )
 from app.services.benchmark_catalog import seed_and_index_benchmarks
 from app.services.github_client import GitHubClient
+from app.services.interview_generator import (
+    extract_technologies,
+    get_cached_project_questions,
+    get_project_questions,
+)
 from app.services.job_service import (
     DuplicateActiveJobError,
     cancel_analysis,
@@ -85,6 +91,56 @@ from app.services.retention import delete_candidate_records_and_files
 logger = logging.getLogger("api_routes")
 
 api_router = APIRouter(prefix="/api/v1")
+
+
+def _project_viva_context(db: Session, project: Project) -> dict[str, Any]:
+    candidate = db.get(Candidate, project.candidate_id)
+    resume_text = "\n".join(resume.raw_text or "" for resume in (candidate.resumes if candidate else []))
+    source_evidence: list[dict[str, str]] = []
+    analyzed_commit: str | None = None
+
+    confirmed = (
+        db.query(RepositorySelection)
+        .filter(
+            RepositorySelection.project_id == project.id,
+            RepositorySelection.is_confirmed.is_(True),
+        )
+        .order_by(RepositorySelection.created_at.desc())
+        .first()
+    )
+    if confirmed:
+        latest_job = (
+            db.query(AnalysisJob)
+            .filter(
+                AnalysisJob.repository_selection_id == confirmed.id,
+                AnalysisJob.status == "succeeded",
+            )
+            .order_by(AnalysisJob.completed_at.desc())
+            .first()
+        )
+        if latest_job and latest_job.result:
+            report = latest_job.result.report
+            analyzed_commit = str(report.get("analyzedCommitSha") or report.get("analyzed_commit_sha") or "") or None
+            for item in report.get("evidence", [])[:20]:
+                if not isinstance(item, dict):
+                    continue
+                source_evidence.append({
+                    "kind": str(item.get("kind", ""))[:80],
+                    "path": str(item.get("path", ""))[:240],
+                    "summary": str(item.get("summary", ""))[:500],
+                })
+
+    context: dict[str, Any] = {
+        "project_title": project.name[:255],
+        "description": (project.description or "")[:4000],
+        "technologies": extract_technologies(f"{project.name}\n{project.description or ''}\n{resume_text}"),
+        "declared_github_urls": [str(url)[:512] for url in (project.explicit_github_urls or [])[:10]],
+    }
+    if analyzed_commit:
+        context["analyzed_commit"] = analyzed_commit[:40]
+    if source_evidence:
+        context["source_evidence"] = source_evidence
+    return context
 
 
 def _is_secure_cookie() -> bool:
@@ -482,6 +538,55 @@ def select_candidate_project(
 # --------------------------------------------------------------------------
 # 4. Projects & Repository Selection Endpoints
 # --------------------------------------------------------------------------
+@api_router.get(
+    "/projects/{project_id}/viva-questions",
+    response_model=VivaQuestionsResponse,
+    summary="Retrieve cached project viva questions",
+)
+def get_project_viva_questions(
+    project_id: uuid.UUID,
+    db: Session = Depends(get_db),
+    _sess: dict[str, Any] = Depends(require_admin_session),
+) -> VivaQuestionsResponse:
+    project = db.get(Project, project_id)
+    if not project:
+        raise APIException(status_code=404, code="NOT_FOUND", message="Project not found.")
+    candidate = db.get(Candidate, project.candidate_id)
+    if not candidate or candidate.selected_project_id != project.id:
+        raise APIException(status_code=409, code="PROJECT_NOT_SELECTED", message="Select this project before opening its viva questions.")
+
+    cached = get_cached_project_questions(project.id, _project_viva_context(db, project))
+    if not cached:
+        raise APIException(status_code=404, code="VIVA_NOT_GENERATED", message="Viva questions have not been generated for this project.")
+    return cached
+
+
+@api_router.post(
+    "/projects/{project_id}/viva-questions",
+    response_model=VivaQuestionsResponse,
+    summary="Generate project-specific viva questions",
+)
+def create_project_viva_questions(
+    project_id: uuid.UUID,
+    force_refresh: bool = False,
+    db: Session = Depends(get_db),
+    _csrf: dict[str, Any] = Depends(require_csrf),
+) -> VivaQuestionsResponse:
+    project = db.get(Project, project_id)
+    if not project:
+        raise APIException(status_code=404, code="NOT_FOUND", message="Project not found.")
+    candidate = db.get(Candidate, project.candidate_id)
+    if not candidate or candidate.selected_project_id != project.id:
+        raise APIException(status_code=409, code="PROJECT_NOT_SELECTED", message="Select this project before generating viva questions.")
+
+    return get_project_questions(
+        project.id,
+        _project_viva_context(db, project),
+        settings.gemini_api_key,
+        force_refresh,
+    )
+
+
 @api_router.get(
     "/projects/{project_id}/repositories",
     response_model=list[RepositorySelectionResponse],

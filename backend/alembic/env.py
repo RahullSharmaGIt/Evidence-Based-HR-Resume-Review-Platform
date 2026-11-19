@@ -16,7 +16,10 @@ target_metadata = Base.metadata
 
 # Use configured url if set (e.g. during testing), else default to settings.database_url
 if not config.get_main_option("sqlalchemy.url"):
-    config.set_main_option("sqlalchemy.url", settings.database_url)
+    config.set_main_option(
+        "sqlalchemy.url",
+        (settings.database_url_unpooled or settings.database_url).replace("%", "%%"),
+    )
 
 
 def run_migrations_offline() -> None:

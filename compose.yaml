@@ -36,7 +36,8 @@ services:
     ports:
       - "8000:8000"
     environment:
-      DATABASE_URL: postgresql+psycopg://app_user:password@postgres:5432/resume_review
+      DATABASE_URL: ${DATABASE_URL:-postgresql+psycopg://app_user:password@postgres:5432/resume_review}
+      DATABASE_URL_UNPOOLED: ${DATABASE_URL_UNPOOLED:-postgresql+psycopg://app_user:password@postgres:5432/resume_review}
       REDIS_URL: redis://redis:6379/0
       APP_ENV: development
       DEBUG: "true"
@@ -73,7 +74,8 @@ services:
     volumes:
       - ./backend:/app
     environment:
-      DATABASE_URL: postgresql+psycopg://app_user:password@postgres:5432/resume_review
+      DATABASE_URL: ${DATABASE_URL:-postgresql+psycopg://app_user:password@postgres:5432/resume_review}
+      DATABASE_URL_UNPOOLED: ${DATABASE_URL_UNPOOLED:-postgresql+psycopg://app_user:password@postgres:5432/resume_review}
       REDIS_URL: redis://redis:6379/0
       APP_ENV: development
       STORAGE_DIR: /tmp/resume_storage

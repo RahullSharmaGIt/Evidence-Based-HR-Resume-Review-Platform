@@ -10,7 +10,6 @@ import React, {
 import { usePathname, useRouter } from "next/navigation";
 import {
   getCsrfToken,
-  getSession,
   login as apiLogin,
   logout as apiLogout,
   setCsrfToken,
@@ -36,22 +35,11 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
   const [isExpired, setIsExpired] = useState<boolean>(false);
 
   useEffect(() => {
-    // Check initial session token in storage or verify cookie session
+    // Restore authentication from the client-readable CSRF cookie or storage.
     const token = getCsrfToken();
     if (token) {
       setCsrfTokenState(token);
       setIsAuthenticated(true);
-    } else {
-      getSession()
-        .then((s) => {
-          if (s.csrfToken) {
-            setCsrfTokenState(s.csrfToken);
-            setIsAuthenticated(true);
-          }
-        })
-        .catch(() => {
-          // not logged in yet
-        });
     }
 
     setOnUnauthorized(() => {

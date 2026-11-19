@@ -775,6 +775,109 @@
         ],
         "title": "ValidationError",
         "type": "object"
+      },
+      "VivaQuestion": {
+        "properties": {
+          "category": {
+            "enum": [
+              "Architecture & Design",
+              "Implementation Details",
+              "Edge Cases & Failure Modes",
+              "Security & Trade-offs",
+              "Testing & Evolution"
+            ],
+            "title": "Category",
+            "type": "string"
+          },
+          "expectedAnswer": {
+            "minLength": 20,
+            "title": "Expectedanswer",
+            "type": "string"
+          },
+          "id": {
+            "maximum": 10.0,
+            "minimum": 1.0,
+            "title": "Id",
+            "type": "integer"
+          },
+          "keySignals": {
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 3,
+            "minItems": 2,
+            "title": "Keysignals",
+            "type": "array"
+          },
+          "question": {
+            "minLength": 10,
+            "title": "Question",
+            "type": "string"
+          },
+          "redFlags": {
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 2,
+            "minItems": 1,
+            "title": "Redflags",
+            "type": "array"
+          }
+        },
+        "required": [
+          "id",
+          "category",
+          "question",
+          "expectedAnswer",
+          "keySignals",
+          "redFlags"
+        ],
+        "title": "VivaQuestion",
+        "type": "object"
+      },
+      "VivaQuestionsResponse": {
+        "properties": {
+          "generatedAt": {
+            "format": "date-time",
+            "title": "Generatedat",
+            "type": "string"
+          },
+          "projectId": {
+            "format": "uuid",
+            "title": "Projectid",
+            "type": "string"
+          },
+          "projectTitle": {
+            "title": "Projecttitle",
+            "type": "string"
+          },
+          "questions": {
+            "items": {
+              "$ref": "#/components/schemas/VivaQuestion"
+            },
+            "maxItems": 10,
+            "minItems": 10,
+            "title": "Questions",
+            "type": "array"
+          },
+          "source": {
+            "enum": [
+              "gemini",
+              "fallback"
+            ],
+            "title": "Source",
+            "type": "string"
+          }
+        },
+        "required": [
+          "projectId",
+          "projectTitle",
+          "generatedAt",
+          "source",
+          "questions"
+        ],
+        "title": "VivaQuestionsResponse",
+        "type": "object"
       }
     }
   },
@@ -1307,6 +1410,94 @@
           }
         },
         "summary": "Confirm the repository selection to be analyzed"
+      }
+    },
+    "/api/v1/projects/{project_id}/viva-questions": {
+      "get": {
+        "operationId": "get_project_viva_questions_api_v1_projects__project_id__viva_questions_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "project_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Project Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VivaQuestionsResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Retrieve cached project viva questions"
+      },
+      "post": {
+        "operationId": "create_project_viva_questions_api_v1_projects__project_id__viva_questions_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "project_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Project Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "force_refresh",
+            "required": false,
+            "schema": {
+              "default": false,
+              "title": "Force Refresh",
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VivaQuestionsResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Generate project-specific viva questions"
       }
     },
     "/api/v1/resume-batches": {

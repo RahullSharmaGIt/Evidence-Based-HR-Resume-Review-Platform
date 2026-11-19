@@ -1,0 +1,16 @@
+{
+  "status": "healthy",
+  "environment": "staging",
+  "database": {
+    "status": "connected",
+    "provider": "neon-postgresql",
+    "ssl": true
+  },
+  "cache": {
+    "status": "connected",
+    "provider": "upstash-redis",
+    "ssl": true
+  },
+  "version": "1.0.0",
+  "timestamp": "2026-11-03T15:30:00Z"
+}

@@ -20,6 +20,8 @@ from app.schemas.contracts import (
     SelectProjectRequest,
     SessionCreateRequest,
     SessionResponse,
+    VivaQuestion,
+    VivaQuestionsResponse,
 )
 
 __all__ = [
@@ -44,4 +46,6 @@ __all__ = [
     "SelectProjectRequest",
     "SessionCreateRequest",
     "SessionResponse",
+    "VivaQuestion",
+    "VivaQuestionsResponse",
 ]

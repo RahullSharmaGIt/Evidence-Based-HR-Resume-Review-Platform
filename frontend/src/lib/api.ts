@@ -13,6 +13,7 @@ export type SelectProjectRequest = Schemas["SelectProjectRequest"];
 export type RepositorySelectionResponse = Schemas["RepositorySelectionResponse"];
 export type ConfirmRepositoryRequest = Schemas["ConfirmRepositoryRequest"];
 export type AnalysisJobResponse = Schemas["AnalysisJobResponse"];
+export type VivaQuestionsResponse = Schemas["VivaQuestionsResponse"];
 
 export interface ErrorResponse {
   code?: string;
@@ -268,6 +269,20 @@ export async function deleteCandidate(
 // ---------------------------------------------------------------------------
 // Repositories & Analysis
 // ---------------------------------------------------------------------------
+
+export async function getProjectVivaQuestions(projectId: string): Promise<VivaQuestionsResponse> {
+  return request<VivaQuestionsResponse>(`/api/v1/projects/${projectId}/viva-questions`);
+}
+
+export async function generateProjectVivaQuestions(
+  projectId: string,
+  forceRefresh: boolean = false
+): Promise<VivaQuestionsResponse> {
+  const query = forceRefresh ? "?force_refresh=true" : "";
+  return request<VivaQuestionsResponse>(`/api/v1/projects/${projectId}/viva-questions${query}`, {
+    method: "POST",
+  });
+}
 
 export async function listProjectRepositories(
   projectId: string,

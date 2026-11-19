@@ -1,7 +1,7 @@
 import uuid
 from datetime import UTC, datetime
 from enum import Enum
-from typing import Any, TypeVar
+from typing import Any, Literal, TypeVar
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 from pydantic.alias_generators import to_camel
@@ -159,6 +159,36 @@ class ProjectSummary(ContractModel):
         if v is None:
             return datetime.now(UTC).isoformat()
         return str(v)
+
+
+class VivaQuestion(ContractModel):
+    id: int = Field(ge=1, le=10)
+    category: Literal[
+        "Architecture & Design",
+        "Implementation Details",
+        "Edge Cases & Failure Modes",
+        "Security & Trade-offs",
+        "Testing & Evolution",
+    ]
+    question: str = Field(min_length=10)
+    expected_answer: str = Field(min_length=20)
+    key_signals: list[str] = Field(min_length=2, max_length=3)
+    red_flags: list[str] = Field(min_length=1, max_length=2)
+
+
+class VivaQuestionsResponse(ContractModel):
+    project_id: uuid.UUID
+    project_title: str
+    generated_at: datetime
+    source: Literal["gemini", "fallback"]
+    questions: list[VivaQuestion] = Field(min_length=10, max_length=10)
+
+    @field_validator("questions")
+    @classmethod
+    def require_ordered_ten_questions(cls, questions: list[VivaQuestion]) -> list[VivaQuestion]:
+        if [question.id for question in questions] != list(range(1, 11)):
+            raise ValueError("Viva questions must be numbered from 1 to 10 in order.")
+        return questions
 
 
 class CandidateSummary(ContractModel):
