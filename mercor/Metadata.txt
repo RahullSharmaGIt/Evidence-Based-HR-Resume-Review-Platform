@@ -1,8 +1,0 @@
-Topology: Brave (CREATE) → TablePlus (LOOKUP) → Terminal (CREATE) → Docker Desktop (LOOKUP) → Brave (LOOKUP)
-Apps: Brave, TablePlus, Terminal, Docker Desktop
-Request: Deploy and verify a multi-container candidate project verification platform (FastAPI backend, Next.js frontend, Python RQ worker, PostgreSQL, and Redis) to a live, secure HTTPS staging environment within 25 minutes using cloud-managed data layers and native macOS tooling.
-Task Description:
-1. Provision cloud databases: In Brave, create serverless PostgreSQL and Redis instances using Neon and Upstash, respectively, and configure their connection strings in the local environment.
-2. Verify database connectivity and schema: In TablePlus, inspect the initial PostgreSQL connection. In Terminal, execute Alembic migrations, then refresh TablePlus to verify the generated tables and relational schema.
-3. Build and launch containers: In Terminal, launch the containerized stack using Docker Compose. In Docker Desktop, inspect container resource utilization, check FastAPI and RQ worker logs, and confirm healthy container states.
-4. Verify staging deployment: In Terminal, establish a public HTTPS edge tunnel. In Brave, navigate to the public HTTPS URL and verify that the application interface and backend health endpoint return successful responses.
