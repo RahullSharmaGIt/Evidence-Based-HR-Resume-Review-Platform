@@ -4,12 +4,14 @@ import React, { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ResumeUpload } from "@/components/ResumeUpload";
+import { BatchProjectMatcher } from "@/components/BatchProjectMatcher";
 import { useSession } from "@/components/SessionProvider";
 import {
   deleteCandidate,
   getCandidate,
   listCandidates,
   selectCandidateProject,
+  type BatchUploadItem,
   type CandidateDetailResponse,
   type CandidateSummary,
 } from "@/lib/api";
@@ -24,6 +26,7 @@ export default function DashboardPage() {
   const [candidateDetailLoading, setCandidateDetailLoading] = useState<boolean>(false);
   const [actionError, setActionError] = useState<string | null>(null);
   const [showManualModal, setShowManualModal] = useState<boolean>(false);
+  const [latestBatchItems, setLatestBatchItems] = useState<BatchUploadItem[] | null>(null);
 
   const fetchCandidates = useCallback(async () => {
     setLoading(true);
@@ -147,9 +150,18 @@ export default function DashboardPage() {
 
         {/* 1. Resume Multi-Upload Component */}
         <ResumeUpload
-          onUploadComplete={fetchCandidates}
+          onUploadComplete={(items) => {
+            setLatestBatchItems(items);
+            void fetchCandidates();
+          }}
+          onBatchReset={() => setLatestBatchItems(null)}
           onManualEntryClick={() => setShowManualModal(true)}
         />
+
+        {/* 1b. Batch Project Matching Against Job Criteria */}
+        {latestBatchItems && latestBatchItems.length > 0 && (
+          <BatchProjectMatcher batchItems={latestBatchItems} />
+        )}
 
         {/* 2. Candidate Profiles & Project Selection */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">

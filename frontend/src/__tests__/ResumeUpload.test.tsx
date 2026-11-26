@@ -23,8 +23,9 @@ describe("ResumeUpload Component", () => {
     expect(notice).toBeInTheDocument();
     expect(notice).toHaveTextContent("PDF (.pdf)");
     expect(notice).toHaveTextContent("Microsoft Word (.docx)");
-    expect(notice).toHaveTextContent("Up to 10 MB per file");
+    expect(notice).toHaveTextContent("Up to 10 MB per file, max 20 files per batch");
     expect(notice).toHaveTextContent("Text-based digital documents only");
+    expect(screen.getByLabelText(/Select Resume Files/i)).toHaveAttribute("multiple");
   });
 
   it("handles upload success and invokes onUploadComplete callback", async () => {

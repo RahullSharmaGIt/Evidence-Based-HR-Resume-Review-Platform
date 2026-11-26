@@ -244,6 +244,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/resume-batches/match": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Rank extracted projects from a specific upload batch against job criteria */
+        post: operations["match_resume_batch_projects_api_v1_resume_batches_match_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/resumes/{resume_id}/download": {
         parameters: {
             query?: never;
@@ -338,6 +355,32 @@ export interface components {
             status: string;
             /** Updatedat */
             updatedAt: string;
+        };
+        /** BatchProjectMatchRequest */
+        BatchProjectMatchRequest: {
+            /** Candidateids */
+            candidateIds: string[];
+            /** Criteria */
+            criteria: string;
+        };
+        /** BatchProjectMatchResponse */
+        BatchProjectMatchResponse: {
+            /** Candidateswithoutprojects */
+            candidatesWithoutProjects?: components["schemas"]["CandidateWithoutProjects"][];
+            /** Criteriaterms */
+            criteriaTerms: string[];
+            /** Decisionsupportnotice */
+            decisionSupportNotice: string;
+            /** Evaluatedcandidatecount */
+            evaluatedCandidateCount: number;
+            /** Ignoredprotectedterms */
+            ignoredProtectedTerms?: string[];
+            /** Methodologynote */
+            methodologyNote: string;
+            /** Results */
+            results?: components["schemas"]["RankedProjectMatch"][];
+            /** Unknowncandidateids */
+            unknownCandidateIds?: string[];
         };
         /** BatchUploadItem */
         BatchUploadItem: {
@@ -483,6 +526,16 @@ export interface components {
             /** Updatedat */
             updatedAt: string;
         };
+        /** CandidateWithoutProjects */
+        CandidateWithoutProjects: {
+            /**
+             * Candidateid
+             * Format: uuid
+             */
+            candidateId: string;
+            /** Candidatename */
+            candidateName: string;
+        };
         /** ConfirmRepositoryRequest */
         ConfirmRepositoryRequest: {
             /**
@@ -495,6 +548,20 @@ export interface components {
         HTTPValidationError: {
             /** Detail */
             detail?: components["schemas"]["ValidationError"][];
+        };
+        /** MatchEvidenceItem */
+        MatchEvidenceItem: {
+            /** Excerpt */
+            excerpt: string;
+            /**
+             * Source
+             * @enum {string}
+             */
+            source: "project_name" | "project_description" | "project_url" | "resume_text";
+            /** Sourcepage */
+            sourcePage?: number | null;
+            /** Term */
+            term: string;
         };
         /** ProjectSummary */
         ProjectSummary: {
@@ -523,6 +590,35 @@ export interface components {
             name: string;
             /** Sourcepage */
             sourcePage?: number | null;
+        };
+        /** RankedProjectMatch */
+        RankedProjectMatch: {
+            /**
+             * Candidateid
+             * Format: uuid
+             */
+            candidateId: string;
+            /** Candidatename */
+            candidateName: string;
+            /** Evidence */
+            evidence?: components["schemas"]["MatchEvidenceItem"][];
+            /** Matchscore */
+            matchScore: number;
+            /** Matchedterms */
+            matchedTerms?: string[];
+            /** Projectdescription */
+            projectDescription?: string | null;
+            /**
+             * Projectid
+             * Format: uuid
+             */
+            projectId: string;
+            /** Projectname */
+            projectName: string;
+            /** Sourcepage */
+            sourcePage?: number | null;
+            /** Unmatchedterms */
+            unmatchedTerms?: string[];
         };
         /** RepositorySelectionResponse */
         RepositorySelectionResponse: {
@@ -1124,6 +1220,39 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["BatchUploadResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    match_resume_batch_projects_api_v1_resume_batches_match_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BatchProjectMatchRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BatchProjectMatchResponse"];
                 };
             };
             /** @description Validation Error */

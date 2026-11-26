@@ -5,6 +5,11 @@ export type SessionCreateRequest = Schemas["SessionCreateRequest"];
 export type SessionResponse = Schemas["SessionResponse"];
 export type BatchUploadResponse = Schemas["BatchUploadResponse"];
 export type BatchUploadItem = Schemas["BatchUploadItem"];
+export type BatchProjectMatchRequest = Schemas["BatchProjectMatchRequest"];
+export type BatchProjectMatchResponse = Schemas["BatchProjectMatchResponse"];
+export type RankedProjectMatch = Schemas["RankedProjectMatch"];
+export type MatchEvidenceItem = Schemas["MatchEvidenceItem"];
+export type CandidateWithoutProjects = Schemas["CandidateWithoutProjects"];
 export type CandidateSummary = Schemas["CandidateSummary"];
 export type CandidateDetailResponse = Schemas["CandidateDetailResponse"];
 export type ProjectSummary = Schemas["ProjectSummary"];
@@ -224,6 +229,18 @@ export async function uploadResumeBatches(files: File[]): Promise<BatchUploadRes
   return request<BatchUploadResponse>("/api/v1/resume-batches", {
     method: "POST",
     body: formData,
+  });
+}
+
+export async function matchResumeBatchProjects(
+  data: BatchProjectMatchRequest
+): Promise<BatchProjectMatchResponse> {
+  return request<BatchProjectMatchResponse>("/api/v1/resume-batches/match", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(data),
   });
 }
 

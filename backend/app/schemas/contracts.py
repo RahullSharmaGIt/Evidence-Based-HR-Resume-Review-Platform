@@ -115,6 +115,55 @@ class BatchUploadResponse(ContractModel):
     failed: list[BatchUploadItem] = Field(default_factory=list)
 
 
+class BatchProjectMatchRequest(ContractModel):
+    candidate_ids: list[uuid.UUID] = Field(min_length=1, max_length=50)
+    criteria: str = Field(min_length=2, max_length=5000)
+
+    @field_validator("criteria")
+    @classmethod
+    def validate_criteria_not_blank(cls, value: str) -> str:
+        cleaned = value.strip()
+        if len(cleaned) < 2:
+            raise ValueError("Criteria must contain at least 2 non-whitespace characters.")
+        return cleaned
+
+
+class MatchEvidenceItem(ContractModel):
+    term: str
+    source: Literal["project_name", "project_description", "project_url", "resume_text"]
+    excerpt: str
+    source_page: int | None = None
+
+
+class RankedProjectMatch(ContractModel):
+    candidate_id: uuid.UUID
+    candidate_name: str
+    project_id: uuid.UUID
+    project_name: str
+    project_description: str | None = None
+    source_page: int | None = None
+    match_score: float = Field(ge=0.0, le=100.0)
+    matched_terms: list[str] = Field(default_factory=list)
+    unmatched_terms: list[str] = Field(default_factory=list)
+    evidence: list[MatchEvidenceItem] = Field(default_factory=list)
+
+
+class CandidateWithoutProjects(ContractModel):
+    candidate_id: uuid.UUID
+    candidate_name: str
+
+
+class BatchProjectMatchResponse(ContractModel):
+    criteria_terms: list[str]
+    ignored_protected_terms: list[str] = Field(default_factory=list)
+    methodology_note: str
+    decision_support_notice: str
+    evaluated_candidate_count: int
+    unknown_candidate_ids: list[uuid.UUID] = Field(default_factory=list)
+    candidates_without_projects: list[CandidateWithoutProjects] = Field(default_factory=list)
+    results: list[RankedProjectMatch] = Field(default_factory=list)
+
+
 class ResumeSummary(ContractModel):
     id: uuid.UUID
     original_filename: str

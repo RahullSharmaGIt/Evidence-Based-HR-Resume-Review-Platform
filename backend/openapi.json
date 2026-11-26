@@ -118,6 +118,92 @@
         "title": "AnalysisJobResponse",
         "type": "object"
       },
+      "BatchProjectMatchRequest": {
+        "properties": {
+          "candidateIds": {
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "maxItems": 50,
+            "minItems": 1,
+            "title": "Candidateids",
+            "type": "array"
+          },
+          "criteria": {
+            "maxLength": 5000,
+            "minLength": 2,
+            "title": "Criteria",
+            "type": "string"
+          }
+        },
+        "required": [
+          "candidateIds",
+          "criteria"
+        ],
+        "title": "BatchProjectMatchRequest",
+        "type": "object"
+      },
+      "BatchProjectMatchResponse": {
+        "properties": {
+          "candidatesWithoutProjects": {
+            "items": {
+              "$ref": "#/components/schemas/CandidateWithoutProjects"
+            },
+            "title": "Candidateswithoutprojects",
+            "type": "array"
+          },
+          "criteriaTerms": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Criteriaterms",
+            "type": "array"
+          },
+          "decisionSupportNotice": {
+            "title": "Decisionsupportnotice",
+            "type": "string"
+          },
+          "evaluatedCandidateCount": {
+            "title": "Evaluatedcandidatecount",
+            "type": "integer"
+          },
+          "ignoredProtectedTerms": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Ignoredprotectedterms",
+            "type": "array"
+          },
+          "methodologyNote": {
+            "title": "Methodologynote",
+            "type": "string"
+          },
+          "results": {
+            "items": {
+              "$ref": "#/components/schemas/RankedProjectMatch"
+            },
+            "title": "Results",
+            "type": "array"
+          },
+          "unknownCandidateIds": {
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "title": "Unknowncandidateids",
+            "type": "array"
+          }
+        },
+        "required": [
+          "criteriaTerms",
+          "methodologyNote",
+          "decisionSupportNotice",
+          "evaluatedCandidateCount"
+        ],
+        "title": "BatchProjectMatchResponse",
+        "type": "object"
+      },
       "BatchUploadItem": {
         "properties": {
           "candidateId": {
@@ -505,6 +591,25 @@
         "title": "CandidateSummary",
         "type": "object"
       },
+      "CandidateWithoutProjects": {
+        "properties": {
+          "candidateId": {
+            "format": "uuid",
+            "title": "Candidateid",
+            "type": "string"
+          },
+          "candidateName": {
+            "title": "Candidatename",
+            "type": "string"
+          }
+        },
+        "required": [
+          "candidateId",
+          "candidateName"
+        ],
+        "title": "CandidateWithoutProjects",
+        "type": "object"
+      },
       "ConfirmRepositoryRequest": {
         "properties": {
           "repositorySelectionId": {
@@ -530,6 +635,46 @@
           }
         },
         "title": "HTTPValidationError",
+        "type": "object"
+      },
+      "MatchEvidenceItem": {
+        "properties": {
+          "excerpt": {
+            "title": "Excerpt",
+            "type": "string"
+          },
+          "source": {
+            "enum": [
+              "project_name",
+              "project_description",
+              "project_url",
+              "resume_text"
+            ],
+            "title": "Source",
+            "type": "string"
+          },
+          "sourcePage": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sourcepage"
+          },
+          "term": {
+            "title": "Term",
+            "type": "string"
+          }
+        },
+        "required": [
+          "term",
+          "source",
+          "excerpt"
+        ],
+        "title": "MatchEvidenceItem",
         "type": "object"
       },
       "ProjectSummary": {
@@ -594,6 +739,86 @@
           "createdAt"
         ],
         "title": "ProjectSummary",
+        "type": "object"
+      },
+      "RankedProjectMatch": {
+        "properties": {
+          "candidateId": {
+            "format": "uuid",
+            "title": "Candidateid",
+            "type": "string"
+          },
+          "candidateName": {
+            "title": "Candidatename",
+            "type": "string"
+          },
+          "evidence": {
+            "items": {
+              "$ref": "#/components/schemas/MatchEvidenceItem"
+            },
+            "title": "Evidence",
+            "type": "array"
+          },
+          "matchScore": {
+            "maximum": 100.0,
+            "minimum": 0.0,
+            "title": "Matchscore",
+            "type": "number"
+          },
+          "matchedTerms": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Matchedterms",
+            "type": "array"
+          },
+          "projectDescription": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Projectdescription"
+          },
+          "projectId": {
+            "format": "uuid",
+            "title": "Projectid",
+            "type": "string"
+          },
+          "projectName": {
+            "title": "Projectname",
+            "type": "string"
+          },
+          "sourcePage": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sourcepage"
+          },
+          "unmatchedTerms": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Unmatchedterms",
+            "type": "array"
+          }
+        },
+        "required": [
+          "candidateId",
+          "candidateName",
+          "projectId",
+          "projectName",
+          "matchScore"
+        ],
+        "title": "RankedProjectMatch",
         "type": "object"
       },
       "RepositorySelectionResponse": {
@@ -1536,6 +1761,44 @@
           }
         },
         "summary": "Upload and extract multiple candidate resumes safely"
+      }
+    },
+    "/api/v1/resume-batches/match": {
+      "post": {
+        "operationId": "match_resume_batch_projects_api_v1_resume_batches_match_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BatchProjectMatchRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BatchProjectMatchResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Rank extracted projects from a specific upload batch against job criteria"
       }
     },
     "/api/v1/resumes/{resume_id}/download": {

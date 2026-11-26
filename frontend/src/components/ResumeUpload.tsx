@@ -5,11 +5,13 @@ import { uploadResumeBatches, type BatchUploadItem } from "@/lib/api";
 
 interface ResumeUploadProps {
   onUploadComplete?: (items: BatchUploadItem[]) => void;
+  onBatchReset?: () => void;
   onManualEntryClick?: () => void;
 }
 
 export function ResumeUpload({
   onUploadComplete,
+  onBatchReset,
   onManualEntryClick,
 }: ResumeUploadProps) {
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
@@ -23,6 +25,9 @@ export function ResumeUpload({
       setSelectedFiles(filesArray);
       setUploadResults(null);
       setGeneralError(null);
+      if (onBatchReset) {
+        onBatchReset();
+      }
     }
   };
 
@@ -76,7 +81,7 @@ export function ResumeUpload({
         <div className="font-medium text-slate-900">Supported Formats & Limits:</div>
         <ul className="list-disc list-inside space-y-0.5 text-xs text-slate-600">
           <li><strong>Accepted Formats:</strong> PDF (<code>.pdf</code>) and Microsoft Word (<code>.docx</code>)</li>
-          <li><strong>File Size Limit:</strong> Up to 10 MB per file, max 10 files per batch</li>
+          <li><strong>File Size Limit:</strong> Up to 10 MB per file, max 20 files per batch</li>
           <li><strong>Requirement:</strong> Text-based digital documents only. Image-only or scanned PDFs are unsupported and require manual project entry.</li>
         </ul>
       </div>
@@ -87,7 +92,7 @@ export function ResumeUpload({
             htmlFor="resume-files"
             className="block text-sm font-medium text-slate-700 mb-1"
           >
-            Select Resume Files
+            Select Resume Files (Multiple PDF/DOCX allowed)
           </label>
           <input
             id="resume-files"

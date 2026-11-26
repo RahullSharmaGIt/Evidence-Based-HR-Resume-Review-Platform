@@ -44,21 +44,32 @@ from app.models.entities import (
 )
 from app.schemas.contracts import (
     AnalysisJobResponse,
+    BatchProjectMatchRequest,
+    BatchProjectMatchResponse,
     BatchUploadItem,
     BatchUploadResponse,
     BenchmarkProjectResponse,
     BenchmarkRepositorySummary,
     CandidateDetailResponse,
     CandidateSummary,
+    CandidateWithoutProjects,
     ConfirmRepositoryRequest,
+    MatchEvidenceItem,
     ProjectSuggestion,
     ProjectSummary,
+    RankedProjectMatch,
     RepositorySelectionResponse,
     ResumeSummary,
     SelectProjectRequest,
     SessionCreateRequest,
     SessionResponse,
     VivaQuestionsResponse,
+)
+from app.services.batch_matching import (
+    DECISION_SUPPORT_NOTICE,
+    METHODOLOGY_NOTE,
+    extract_criteria_terms,
+    rank_batch_projects,
 )
 from app.services.benchmark_catalog import seed_and_index_benchmarks
 from app.services.github_client import GitHubClient
@@ -419,6 +430,76 @@ async def upload_resume_batch(
         total=len(files),
         successful=successful_items,
         failed=failed_items,
+    )
+
+
+@api_router.post(
+    "/resume-batches/match",
+    response_model=BatchProjectMatchResponse,
+    summary="Rank extracted projects from a specific upload batch against job criteria",
+)
+def match_resume_batch_projects(
+    body: BatchProjectMatchRequest,
+    db: Session = Depends(get_db),
+    _csrf: dict[str, Any] = Depends(require_csrf),
+) -> BatchProjectMatchResponse:
+    unique_ids = list(dict.fromkeys(body.candidate_ids))
+    if len(unique_ids) > settings.max_batch_size:
+        raise APIException(
+            status_code=400,
+            code="INVALID_BATCH_SIZE",
+            message=f"Batch matching accepts at most {settings.max_batch_size} candidates.",
+        )
+
+    extracted = extract_criteria_terms(body.criteria)
+    if not extracted.terms:
+        raise APIException(
+            status_code=422,
+            code="INVALID_CRITERIA",
+            message="Please enter at least one job-related skill, tool, or requirement.",
+        )
+
+    candidates = db.query(Candidate).filter(Candidate.id.in_(unique_ids)).all()
+    found_by_id = {c.id: c for c in candidates}
+    ordered_candidates = [found_by_id[cid] for cid in unique_ids if cid in found_by_id]
+    unknown_ids = [cid for cid in unique_ids if cid not in found_by_id]
+
+    ranked, without_projects = rank_batch_projects(ordered_candidates, extracted.terms)
+
+    return BatchProjectMatchResponse(
+        criteria_terms=extracted.terms,
+        ignored_protected_terms=extracted.ignored_protected_terms,
+        methodology_note=METHODOLOGY_NOTE,
+        decision_support_notice=DECISION_SUPPORT_NOTICE,
+        evaluated_candidate_count=len(ordered_candidates),
+        unknown_candidate_ids=unknown_ids,
+        candidates_without_projects=[
+            CandidateWithoutProjects(candidate_id=c.id, candidate_name=c.name)
+            for c in without_projects
+        ],
+        results=[
+            RankedProjectMatch(
+                candidate_id=item.candidate_id,
+                candidate_name=item.candidate_name,
+                project_id=item.project_id,
+                project_name=item.project_name,
+                project_description=item.project_description,
+                source_page=item.source_page,
+                match_score=item.match_score,
+                matched_terms=item.matched_terms,
+                unmatched_terms=item.unmatched_terms,
+                evidence=[
+                    MatchEvidenceItem(
+                        term=ev.term,
+                        source=ev.source,
+                        excerpt=ev.excerpt,
+                        source_page=ev.source_page,
+                    )
+                    for ev in item.evidence
+                ],
+            )
+            for item in ranked
+        ],
     )
 
 
